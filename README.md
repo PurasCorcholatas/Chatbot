@@ -97,13 +97,31 @@ El chatbot ahora usa un **sistema de clasificación simple** que no requiere sci
 - `requirements-stable.txt` - Versiones estables (con scikit-learn)
 - `requirements-minimal.txt` - Versiones mínimas (con scikit-learn)
 
-### 🔧 Configuración recomendada para Render:
+### 🔧 Configuración para Render:
+
+**Opción 1: Usar render.yaml (Recomendado)**
 ```yaml
-envVars:
-  - key: PYTHON_VERSION
-    value: 3.11.0
-buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+services:
+  - type: web
+    name: chatbot-fracciones
+    env: python
+    plan: free
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.0"
 ```
+
+**Opción 2: Configuración manual en Render**
+1. Ve a la configuración de tu servicio en Render
+2. **Build Command:** `pip install --upgrade pip && pip install -r requirements.txt`
+3. **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
+4. **Python Version:** `3.11.0` (en Environment Variables)
+
+**Opción 3: Usar runtime.txt**
+- El archivo `runtime.txt` especifica Python 3.11.0
+- Render lo detectará automáticamente
 
 **El despliegue debería funcionar ahora sin problemas de compilación.**
 
