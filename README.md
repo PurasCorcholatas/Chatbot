@@ -92,6 +92,8 @@ El chatbot ahora usa un **sistema de clasificación simple** que no requiere sci
 - ✅ **Compatible con Python 3.11 y 3.13**
 
 ### 📋 Archivos de dependencias disponibles:
+- `requirements-venv.txt` - **RECOMENDADO** (para entorno virtual)
+- `requirements-simple.txt` - Sin versiones específicas, solo wheels
 - `requirements.txt` - **ACTUALIZADO** (sin scikit-learn)
 - `requirements-python311.txt` - Versión optimizada para Python 3.11
 - `requirements-stable.txt` - Versiones estables (con scikit-learn)
@@ -99,15 +101,15 @@ El chatbot ahora usa un **sistema de clasificación simple** que no requiere sci
 
 ### 🔧 Configuración para Render:
 
-**Opción 1: Usar render.yaml (Recomendado)**
+**Opción 1: Usar entorno virtual (RECOMENDADO)**
 ```yaml
 services:
   - type: web
     name: chatbot-fracciones
     env: python
     plan: free
-    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    buildCommand: "chmod +x setup.sh && ./setup.sh"
+    startCommand: "source venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port $PORT"
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.0"
@@ -115,13 +117,17 @@ services:
 
 **Opción 2: Configuración manual en Render**
 1. Ve a la configuración de tu servicio en Render
-2. **Build Command:** `pip install --upgrade pip && pip install -r requirements.txt`
-3. **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
+2. **Build Command:** `chmod +x setup.sh && ./setup.sh`
+3. **Start Command:** `source venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port $PORT`
 4. **Python Version:** `3.11.0` (en Environment Variables)
 
 **Opción 3: Usar runtime.txt**
 - El archivo `runtime.txt` especifica Python 3.11.0
 - Render lo detectará automáticamente
+
+**Opción 4: Configuración simple (sin entorno virtual)**
+- **Build Command:** `pip install --upgrade pip && pip install --only-binary=all -r requirements-simple.txt`
+- **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 **El despliegue debería funcionar ahora sin problemas de compilación.**
 

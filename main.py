@@ -314,8 +314,8 @@ def obtener_estadisticas():
     return {
         "total_ejercicios": len(data),
         "operaciones": {
-            "suma": len(data[data["pregunta"].str.contains("\+")]),
-            "resta": len(data[data["pregunta"].str.contains("\-")]),
+            "suma": len(data[data["pregunta"].str.contains(r"\+")]),
+            "resta": len(data[data["pregunta"].str.contains(r"\-")]),
             "multiplicacion": len(data[data["pregunta"].str.contains("×")]),
             "division": len(data[data["pregunta"].str.contains("÷")])
         },
