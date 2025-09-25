@@ -79,6 +79,22 @@ uvicorn main:app --reload
    - Haz clic en "Create Web Service"
    - Render construirá y desplegará tu aplicación
 
+### ⚠️ Solución de Problemas de Compatibilidad
+
+Si encuentras errores de compilación con pandas, usa el archivo `requirements-stable.txt`:
+
+1. **Cambiar el Build Command en Render a:**
+   ```
+   pip install -r requirements-stable.txt
+   ```
+
+2. **O actualizar el archivo `render.yaml`:**
+   ```yaml
+   buildCommand: pip install -r requirements-stable.txt
+   ```
+
+Esto usa versiones más estables y ampliamente compatibles de las dependencias.
+
 ## Uso de la API
 
 ### 1. Obtener un ejercicio aleatorio
