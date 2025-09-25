@@ -213,17 +213,23 @@ def simple_text_classifier(text, training_data):
 
 def get_error_feedback(error_type, pregunta, respuesta_estudiante, respuesta_correcta):
     """Genera retroalimentación específica basada en el tipo de error"""
+    import re
+    
+    # Extraer números de la pregunta para contexto
+    numeros = re.findall(r'\d+', pregunta)
+    fracciones = re.findall(r'(\d+)/(\d+)', pregunta)
+    
     feedback_templates = {
-        'Error en denominador común': f"Error: no encontraste el denominador común. Para sumar/restar fracciones, necesitas el mismo denominador. El resultado correcto es {respuesta_correcta}.",
-        'Error en numerador': f"Error: revisa cómo operaste los numeradores. El resultado correcto es {respuesta_correcta}.",
-        'Error en simplificación': f"Error: no simplificaste la fracción. El resultado correcto simplificado es {respuesta_correcta}.",
-        'Error en operación': f"Error: revisa la operación realizada. El resultado correcto es {respuesta_correcta}.",
-        'Error de signo': f"Error: revisa los signos en la operación. El resultado correcto es {respuesta_correcta}.",
-        'Error en conversión': f"Error: para dividir fracciones, multiplica por el recíproco. El resultado correcto es {respuesta_correcta}.",
-        'Error en orden de operaciones': f"Error: revisa el orden de las operaciones. El resultado correcto es {respuesta_correcta}."
+        'Error en denominador común': f"Para sumar/restar fracciones necesitas denominador común. Encuentra el MCM de los denominadores. Tu respuesta '{respuesta_estudiante}' no es correcta. La respuesta es {respuesta_correcta}.",
+        'Error en numerador': f"Revisa el cálculo del numerador. Si tienes denominador común, opera solo los numeradores. Tu respuesta '{respuesta_estudiante}' no es correcta. La respuesta es {respuesta_correcta}.",
+        'Error en simplificación': f"Simplifica tu resultado dividiendo numerador y denominador por su MCD. Tu respuesta '{respuesta_estudiante}' puede reducirse. La respuesta simplificada es {respuesta_correcta}.",
+        'Error en operación': f"Verifica la operación. En '{pregunta}' debes {'sumar' if '+' in pregunta else 'restar' if '-' in pregunta else 'multiplicar' if any(x in pregunta for x in ['×', '*', ' x ']) else 'dividir'}. Tu respuesta '{respuesta_estudiante}' no es correcta. La respuesta es {respuesta_correcta}.",
+        'Error de signo': f"Revisa el signo del resultado. Tu respuesta '{respuesta_estudiante}' tiene el signo incorrecto. La respuesta correcta es {respuesta_correcta}.",
+        'Error en conversión': f"Para dividir fracciones, multiplica por el recíproco (invierte la segunda fracción). Tu respuesta '{respuesta_estudiante}' no es correcta. La respuesta es {respuesta_correcta}.",
+        'Error en orden de operaciones': f"Revisa el orden de las operaciones. Tu respuesta '{respuesta_estudiante}' no es correcta. La respuesta es {respuesta_correcta}."
     }
     
-    return feedback_templates.get(error_type, f"Error en la operación. El resultado correcto es {respuesta_correcta}.")
+    return feedback_templates.get(error_type, f"Revisa tu respuesta '{respuesta_estudiante}'. La respuesta correcta es {respuesta_correcta}. Intenta resolver paso a paso.")
 
 def generar_respuesta_dinamica(pregunta, respuesta_estudiante):
     """Genera respuesta dinámica para cualquier pregunta matemática (fracciones o números enteros)"""
@@ -248,7 +254,7 @@ def generar_respuesta_dinamica(pregunta, respuesta_estudiante):
         elif '-' in pregunta:
             resultado_correcto = frac1 - frac2
             operacion = "resta de fracciones"
-        elif '×' in pregunta or '*' in pregunta:
+        elif '×' in pregunta or '*' in pregunta or ' x ' in pregunta.lower():
             resultado_correcto = frac1 * frac2
             operacion = "multiplicación de fracciones"
         elif '÷' in pregunta or '/' in pregunta:
@@ -269,7 +275,7 @@ def generar_respuesta_dinamica(pregunta, respuesta_estudiante):
         elif '-' in pregunta:
             resultado_correcto = num1 - num2
             operacion = "resta"
-        elif '×' in pregunta or '*' in pregunta:
+        elif '×' in pregunta or '*' in pregunta or ' x ' in pregunta.lower():
             resultado_correcto = num1 * num2
             operacion = "multiplicación"
         elif '÷' in pregunta or '/' in pregunta:
@@ -291,7 +297,7 @@ def generar_respuesta_dinamica(pregunta, respuesta_estudiante):
     if respuesta_estudiante_norm == respuesta_correcta_norm:
         return {
             "tipo_error": "Ninguno",
-            "retroalimentacion": "¡Excelente! Tu respuesta es correcta.",
+            "retroalimentacion": f"¡Perfecto! Has resuelto correctamente la {operacion}. Tu respuesta {respuesta_estudiante} es exacta.",
             "respuesta_correcta": respuesta_correcta_str,
             "operacion": operacion
         }

@@ -17,13 +17,13 @@ Un chatbot inteligente desarrollado con FastAPI que ayuda a los estudiantes a pr
 ### Números Enteros:
 - ➕ **Suma** (ej: 5 + 6 = 11)
 - ➖ **Resta** (ej: 10 - 3 = 7)
-- ✖️ **Multiplicación** (ej: 7 × 8 = 56)
+- ✖️ **Multiplicación** (ej: 7 × 8 = 56, 2 x 6 = 12)
 - ➗ **División** (ej: 15 ÷ 3 = 5)
 
 ### Fracciones:
 - ➕ **Suma de fracciones** (ej: 1/2 + 1/4 = 3/4)
 - ➖ **Resta de fracciones** (ej: 3/4 - 1/2 = 1/4)
-- ✖️ **Multiplicación de fracciones** (ej: 2/3 × 3/4 = 1/2)
+- ✖️ **Multiplicación de fracciones** (ej: 2/3 × 3/4 = 1/2, 2/3 x 3/4 = 1/2)
 - ➗ **División de fracciones** (ej: 1/2 ÷ 1/4 = 2)
 
 ## Tipos de Errores Detectados
@@ -217,14 +217,14 @@ ChatBot-MatematicaBasica/
 
 ## Ejemplos de Uso
 
-### Ejemplo 1: Suma de números enteros
+### Ejemplo 1: Multiplicación de números enteros
 ```python
 import requests
 
-# Enviar ejercicio de suma
+# Enviar ejercicio de multiplicación
 respuesta = requests.post("https://tu-app.onrender.com/clasificar/", json={
-    "pregunta": "¿Cuánto es 5 + 6?",
-    "respuesta_estudiante": "11"
+    "pregunta": "¿Cuánto es 2 x 6?",
+    "respuesta_estudiante": "12"
 }).json()
 
 print(f"Tipo de error: {respuesta['tipo_error']}")
@@ -238,7 +238,7 @@ import requests
 
 # Enviar ejercicio de multiplicación
 respuesta = requests.post("https://tu-app.onrender.com/clasificar/", json={
-    "pregunta": "¿Cuánto es 2/3 × 3/4?",
+    "pregunta": "¿Cuánto es 2/3 x 3/4?",
     "respuesta_estudiante": "1/2"
 }).json()
 
@@ -249,20 +249,20 @@ print(f"Operación: {respuesta['operacion']}")
 
 ### Ejemplo 3: Usando curl
 ```bash
-# Clasificar respuesta de suma
+# Clasificar respuesta de multiplicación con x
 curl -X POST "https://tu-app.onrender.com/clasificar/" \
   -H "Content-Type: application/json" \
   -d '{
-    "pregunta": "¿Cuánto es 7 × 8?",
-    "respuesta_estudiante": "56"
+    "pregunta": "¿Cuánto es 2 x 6?",
+    "respuesta_estudiante": "12"
   }'
 
-# Clasificar respuesta de fracciones
+# Clasificar respuesta de fracciones con x
 curl -X POST "https://tu-app.onrender.com/clasificar/" \
   -H "Content-Type: application/json" \
   -d '{
-    "pregunta": "¿Cuánto es 1/2 + 1/3?",
-    "respuesta_estudiante": "5/6"
+    "pregunta": "¿Cuánto es 2/3 x 3/4?",
+    "respuesta_estudiante": "1/2"
   }'
 ```
 
