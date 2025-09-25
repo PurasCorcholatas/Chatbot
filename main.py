@@ -225,6 +225,59 @@ def get_error_feedback(error_type, pregunta, respuesta_estudiante, respuesta_cor
     
     return feedback_templates.get(error_type, f"Error en la operación. El resultado correcto es {respuesta_correcta}.")
 
+def generar_respuesta_dinamica(pregunta, respuesta_estudiante):
+    """Genera respuesta dinámica para cualquier pregunta de fracciones"""
+    import re
+    
+    # Extraer fracciones de la pregunta
+    fracciones = re.findall(r'(\d+)/(\d+)', pregunta)
+    
+    if len(fracciones) < 2:
+        return {"error": "No se pudieron extraer suficientes fracciones de la pregunta."}
+    
+    # Convertir a objetos Fraction
+    frac1 = Fraction(int(fracciones[0][0]), int(fracciones[0][1]))
+    frac2 = Fraction(int(fracciones[1][0]), int(fracciones[1][1]))
+    
+    # Determinar la operación
+    if '+' in pregunta:
+        resultado_correcto = frac1 + frac2
+        operacion = "suma"
+    elif '-' in pregunta:
+        resultado_correcto = frac1 - frac2
+        operacion = "resta"
+    elif '×' in pregunta or '*' in pregunta:
+        resultado_correcto = frac1 * frac2
+        operacion = "multiplicación"
+    elif '÷' in pregunta or '/' in pregunta:
+        resultado_correcto = frac1 / frac2
+        operacion = "división"
+    else:
+        return {"error": "No se pudo determinar la operación en la pregunta."}
+    
+    respuesta_correcta_str = str(resultado_correcto)
+    
+    # Normalizar respuestas para comparación
+    respuesta_estudiante_norm = normalizar_fraccion(respuesta_estudiante)
+    respuesta_correcta_norm = normalizar_fraccion(respuesta_correcta_str)
+    
+    if respuesta_estudiante_norm == respuesta_correcta_norm:
+        return {
+            "tipo_error": "Ninguno",
+            "retroalimentacion": "¡Excelente! Tu respuesta es correcta.",
+            "respuesta_correcta": respuesta_correcta_str
+        }
+    
+    # Clasificar el error
+    tipo_error = simple_text_classifier(respuesta_estudiante, data)
+    retro = get_error_feedback(tipo_error, pregunta, respuesta_estudiante, respuesta_correcta_str)
+    
+    return {
+        "tipo_error": tipo_error,
+        "retroalimentacion": retro,
+        "respuesta_correcta": respuesta_correcta_str
+    }
+
 # 4. Esquema de entrada
 class RespuestaEntrada(BaseModel):
     pregunta: str
@@ -263,11 +316,24 @@ def normalizar_fraccion(fraccion_str):
 # 6. Ruta principal
 @app.post("/clasificar/")
 def clasificar_error(entrada: RespuestaEntrada):
-    # Buscar la pregunta en el dataset
+    # Buscar la pregunta en el dataset (búsqueda flexible)
     fila = data[data["pregunta"] == entrada.pregunta]
    
+    # Si no se encuentra exacta, buscar por contenido similar
     if fila.empty:
-        return {"error": "Pregunta no encontrada en el dataset."}
+        # Extraer números de la pregunta para buscar una similar
+        import re
+        numeros_pregunta = re.findall(r'\d+/\d+', entrada.pregunta)
+        if numeros_pregunta:
+            # Buscar preguntas que contengan los mismos números
+            for num in numeros_pregunta:
+                fila = data[data["pregunta"].str.contains(num, na=False)]
+                if not fila.empty:
+                    break
+    
+    # Si aún no se encuentra, generar respuesta basada en la pregunta
+    if fila.empty:
+        return generar_respuesta_dinamica(entrada.pregunta, entrada.respuesta_estudiante)
 
     respuesta_correcta = fila["respuesta_correcta"].iloc[0]
     
