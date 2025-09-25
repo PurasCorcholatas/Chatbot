@@ -361,19 +361,7 @@ def clasificar_error(entrada: RespuestaEntrada):
     # Buscar la pregunta en el dataset (búsqueda flexible)
     fila = data[data["pregunta"] == entrada.pregunta]
    
-    # Si no se encuentra exacta, buscar por contenido similar
-    if fila.empty:
-        # Extraer números de la pregunta para buscar una similar
-        import re
-        numeros_pregunta = re.findall(r'\d+/\d+', entrada.pregunta)
-        if numeros_pregunta:
-            # Buscar preguntas que contengan los mismos números
-            for num in numeros_pregunta:
-                fila = data[data["pregunta"].str.contains(num, na=False)]
-                if not fila.empty:
-                    break
-    
-    # Si aún no se encuentra, generar respuesta basada en la pregunta
+    # Si no se encuentra exacta, generar respuesta dinámicamente
     if fila.empty:
         return generar_respuesta_dinamica(entrada.pregunta, entrada.respuesta_estudiante)
 
