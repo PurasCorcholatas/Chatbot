@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
 import re
 from fractions import Fraction
 import random
+from collections import Counter
+import math
 
 # 1. Crear FastAPI
 app = FastAPI(title="Chatbot Educativo de Operaciones con Fracciones")
@@ -183,15 +183,47 @@ def generar_dataset_fracciones():
 # Generar el dataset
 data = generar_dataset_fracciones()
 
-# 3. Modelo
-X = data["respuesta_estudiante"]
-y = data["tipo_error"]
+# 3. Sistema de clasificación simple (sin scikit-learn)
+def simple_text_classifier(text, training_data):
+    """Clasificador simple basado en palabras clave"""
+    text_lower = text.lower()
+    
+    # Palabras clave para cada tipo de error
+    error_keywords = {
+        'Error en denominador común': ['denominador', 'común', 'mcm', 'mínimo'],
+        'Error en numerador': ['numerador', 'suma', 'resta'],
+        'Error en simplificación': ['simplificar', 'reducir', 'mcd'],
+        'Error en operación': ['operación', 'multiplicar', 'dividir'],
+        'Error de signo': ['signo', 'negativo', 'positivo'],
+        'Error en conversión': ['conversión', 'recíproco', 'invertir'],
+        'Error en orden de operaciones': ['orden', 'prioridad', 'paréntesis']
+    }
+    
+    # Contar coincidencias
+    scores = {}
+    for error_type, keywords in error_keywords.items():
+        score = sum(1 for keyword in keywords if keyword in text_lower)
+        scores[error_type] = score
+    
+    # Retornar el tipo de error con mayor puntuación
+    if max(scores.values()) > 0:
+        return max(scores, key=scores.get)
+    else:
+        return 'Error en operación'  # Default
 
-vectorizer = TfidfVectorizer()
-X_vec = vectorizer.fit_transform(X)
-
-model = MultinomialNB()
-model.fit(X_vec, y)
+def get_error_feedback(error_type, pregunta, respuesta_estudiante, respuesta_correcta):
+    """Genera retroalimentación específica basada en el tipo de error"""
+    feedback_templates = {
+        'Error en denominador común': f"Error: no encontraste el denominador común. Para sumar/restar fracciones, necesitas el mismo denominador. El resultado correcto es {respuesta_correcta}.",
+        'Error en numerador': f"Error: revisa cómo operaste los numeradores. El resultado correcto es {respuesta_correcta}.",
+        'Error en simplificación': f"Error: no simplificaste la fracción. El resultado correcto simplificado es {respuesta_correcta}.",
+        'Error en operación': f"Error: revisa la operación realizada. El resultado correcto es {respuesta_correcta}.",
+        'Error de signo': f"Error: revisa los signos en la operación. El resultado correcto es {respuesta_correcta}.",
+        'Error en conversión': f"Error: para dividir fracciones, multiplica por el recíproco. El resultado correcto es {respuesta_correcta}.",
+        'Error en orden de operaciones': f"Error: revisa el orden de las operaciones. El resultado correcto es {respuesta_correcta}."
+    }
+    
+    return feedback_templates.get(error_type, f"Error en la operación. El resultado correcto es {respuesta_correcta}.")
 
 # 4. Esquema de entrada
 class RespuestaEntrada(BaseModel):
@@ -250,12 +282,11 @@ def clasificar_error(entrada: RespuestaEntrada):
             "respuesta_correcta": respuesta_correcta
         }
 
-    # Clasificar el error usando el modelo
-    entrada_vec = vectorizer.transform([entrada.respuesta_estudiante])
-    tipo_error = model.predict(entrada_vec)[0]
+    # Clasificar el error usando el clasificador simple
+    tipo_error = simple_text_classifier(entrada.respuesta_estudiante, data)
    
-    # Buscar retroalimentación específica para este tipo de error
-    retro = data[data["tipo_error"] == tipo_error]["retroalimentacion"].iloc[0]
+    # Generar retroalimentación específica
+    retro = get_error_feedback(tipo_error, entrada.pregunta, entrada.respuesta_estudiante, respuesta_correcta)
    
     return {
         "tipo_error": tipo_error,

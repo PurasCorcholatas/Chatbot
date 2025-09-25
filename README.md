@@ -81,44 +81,31 @@ uvicorn main:app --reload
 
 ### ⚠️ Solución de Problemas de Compatibilidad
 
-**🚨 IMPORTANTE: Python 3.13 tiene problemas de compatibilidad con pandas y scikit-learn**
+**✅ PROBLEMA RESUELTO: Eliminado scikit-learn para evitar errores de compilación**
 
-**Opción 1: Usar configuración optimizada para Python 3.11 (RECOMENDADO)**
-```bash
-pip install -r requirements-python311.txt
-```
+El chatbot ahora usa un **sistema de clasificación simple** que no requiere scikit-learn, eliminando completamente los problemas de compatibilidad con Python 3.13.
 
-**Opción 2: Usar versiones estables**
-```bash
-pip install -r requirements-stable.txt
-```
-
-**Opción 3: Usar versiones mínimas**
-```bash
-pip install -r requirements-minimal.txt
-```
-
-**Opción 4: Configuración manual en Render**
-1. Ve a la configuración de tu servicio en Render
-2. **Asegúrate de que `PYTHON_VERSION` esté configurado como `3.11.0`**
-3. Cambia el Build Command a:
-   ```
-   pip install --upgrade pip && pip install -r requirements-python311.txt
-   ```
+**Características del nuevo sistema:**
+- ✅ **Sin dependencias problemáticas** (scikit-learn eliminado)
+- ✅ **Clasificación inteligente** basada en palabras clave
+- ✅ **Retroalimentación personalizada** para cada tipo de error
+- ✅ **Compatible con Python 3.11 y 3.13**
 
 ### 📋 Archivos de dependencias disponibles:
-- `requirements-python311.txt` - **OPTIMIZADO para Python 3.11** (pandas 1.5.3, scikit-learn 1.2.2)
-- `requirements.txt` - Versiones actualizadas (pandas 1.5.3, scikit-learn 1.2.2)
-- `requirements-stable.txt` - Versiones estables (pandas 2.0.3)
-- `requirements-minimal.txt` - Versiones mínimas (pandas 1.5.3)
+- `requirements.txt` - **ACTUALIZADO** (sin scikit-learn)
+- `requirements-python311.txt` - Versión optimizada para Python 3.11
+- `requirements-stable.txt` - Versiones estables (con scikit-learn)
+- `requirements-minimal.txt` - Versiones mínimas (con scikit-learn)
 
 ### 🔧 Configuración recomendada para Render:
 ```yaml
 envVars:
   - key: PYTHON_VERSION
     value: 3.11.0
-buildCommand: pip install --upgrade pip && pip install -r requirements-python311.txt
+buildCommand: pip install --upgrade pip && pip install -r requirements.txt
 ```
+
+**El despliegue debería funcionar ahora sin problemas de compilación.**
 
 ## Uso de la API
 
