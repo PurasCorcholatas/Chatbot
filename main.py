@@ -226,46 +226,74 @@ def get_error_feedback(error_type, pregunta, respuesta_estudiante, respuesta_cor
     return feedback_templates.get(error_type, f"Error en la operación. El resultado correcto es {respuesta_correcta}.")
 
 def generar_respuesta_dinamica(pregunta, respuesta_estudiante):
-    """Genera respuesta dinámica para cualquier pregunta de fracciones"""
+    """Genera respuesta dinámica para cualquier pregunta matemática (fracciones o números enteros)"""
     import re
     
     # Extraer fracciones de la pregunta
     fracciones = re.findall(r'(\d+)/(\d+)', pregunta)
     
-    if len(fracciones) < 2:
-        return {"error": "No se pudieron extraer suficientes fracciones de la pregunta."}
+    # Extraer números enteros de la pregunta
+    numeros_enteros = re.findall(r'\b(\d+)\b', pregunta)
     
-    # Convertir a objetos Fraction
-    frac1 = Fraction(int(fracciones[0][0]), int(fracciones[0][1]))
-    frac2 = Fraction(int(fracciones[1][0]), int(fracciones[1][1]))
-    
-    # Determinar la operación
-    if '+' in pregunta:
-        resultado_correcto = frac1 + frac2
-        operacion = "suma"
-    elif '-' in pregunta:
-        resultado_correcto = frac1 - frac2
-        operacion = "resta"
-    elif '×' in pregunta or '*' in pregunta:
-        resultado_correcto = frac1 * frac2
-        operacion = "multiplicación"
-    elif '÷' in pregunta or '/' in pregunta:
-        resultado_correcto = frac1 / frac2
-        operacion = "división"
+    # Determinar si es operación con fracciones o números enteros
+    if len(fracciones) >= 2:
+        # Operación con fracciones
+        frac1 = Fraction(int(fracciones[0][0]), int(fracciones[0][1]))
+        frac2 = Fraction(int(fracciones[1][0]), int(fracciones[1][1]))
+        
+        # Determinar la operación
+        if '+' in pregunta:
+            resultado_correcto = frac1 + frac2
+            operacion = "suma de fracciones"
+        elif '-' in pregunta:
+            resultado_correcto = frac1 - frac2
+            operacion = "resta de fracciones"
+        elif '×' in pregunta or '*' in pregunta:
+            resultado_correcto = frac1 * frac2
+            operacion = "multiplicación de fracciones"
+        elif '÷' in pregunta or '/' in pregunta:
+            resultado_correcto = frac1 / frac2
+            operacion = "división de fracciones"
+        else:
+            return {"error": "No se pudo determinar la operación en la pregunta."}
+            
+    elif len(numeros_enteros) >= 2:
+        # Operación con números enteros
+        num1 = int(numeros_enteros[0])
+        num2 = int(numeros_enteros[1])
+        
+        # Determinar la operación
+        if '+' in pregunta:
+            resultado_correcto = num1 + num2
+            operacion = "suma"
+        elif '-' in pregunta:
+            resultado_correcto = num1 - num2
+            operacion = "resta"
+        elif '×' in pregunta or '*' in pregunta:
+            resultado_correcto = num1 * num2
+            operacion = "multiplicación"
+        elif '÷' in pregunta or '/' in pregunta:
+            if num2 == 0:
+                return {"error": "No se puede dividir por cero."}
+            resultado_correcto = num1 / num2
+            operacion = "división"
+        else:
+            return {"error": "No se pudo determinar la operación en la pregunta."}
     else:
-        return {"error": "No se pudo determinar la operación en la pregunta."}
+        return {"error": "No se pudieron extraer suficientes números de la pregunta."}
     
     respuesta_correcta_str = str(resultado_correcto)
     
     # Normalizar respuestas para comparación
-    respuesta_estudiante_norm = normalizar_fraccion(respuesta_estudiante)
-    respuesta_correcta_norm = normalizar_fraccion(respuesta_correcta_str)
+    respuesta_estudiante_norm = normalizar_respuesta(respuesta_estudiante)
+    respuesta_correcta_norm = normalizar_respuesta(respuesta_correcta_str)
     
     if respuesta_estudiante_norm == respuesta_correcta_norm:
         return {
             "tipo_error": "Ninguno",
             "retroalimentacion": "¡Excelente! Tu respuesta es correcta.",
-            "respuesta_correcta": respuesta_correcta_str
+            "respuesta_correcta": respuesta_correcta_str,
+            "operacion": operacion
         }
     
     # Clasificar el error
@@ -275,7 +303,8 @@ def generar_respuesta_dinamica(pregunta, respuesta_estudiante):
     return {
         "tipo_error": tipo_error,
         "retroalimentacion": retro,
-        "respuesta_correcta": respuesta_correcta_str
+        "respuesta_correcta": respuesta_correcta_str,
+        "operacion": operacion
     }
 
 # 4. Esquema de entrada
@@ -283,35 +312,42 @@ class RespuestaEntrada(BaseModel):
     pregunta: str
     respuesta_estudiante: str
 
-# 5. Función para normalizar fracciones
-def normalizar_fraccion(fraccion_str):
-    """Normaliza una fracción para comparación"""
+# 5. Función para normalizar respuestas (fracciones y números enteros)
+def normalizar_respuesta(respuesta_str):
+    """Normaliza una respuesta para comparación (fracciones y números enteros)"""
     try:
         # Remover espacios y convertir a minúsculas
-        fraccion_str = fraccion_str.strip().lower()
+        respuesta_str = respuesta_str.strip().lower()
         
         # Si contiene '/', es una fracción
-        if '/' in fraccion_str:
-            partes = fraccion_str.split('/')
+        if '/' in respuesta_str:
+            partes = respuesta_str.split('/')
             if len(partes) == 2:
                 num = int(partes[0])
                 den = int(partes[1])
                 return str(Fraction(num, den))
         
         # Si es un número entero
-        if fraccion_str.isdigit():
-            return fraccion_str
+        if respuesta_str.isdigit():
+            return respuesta_str
         
         # Si es un decimal, convertir a fracción
         try:
-            decimal = float(fraccion_str)
+            decimal = float(respuesta_str)
+            # Si es un número entero, devolverlo como entero
+            if decimal.is_integer():
+                return str(int(decimal))
             return str(Fraction(decimal).limit_denominator())
         except:
             pass
             
-        return fraccion_str
+        return respuesta_str
     except:
-        return fraccion_str
+        return respuesta_str
+
+def normalizar_fraccion(fraccion_str):
+    """Normaliza una fracción para comparación (mantenido para compatibilidad)"""
+    return normalizar_respuesta(fraccion_str)
 
 # 6. Ruta principal
 @app.post("/clasificar/")

@@ -5,17 +5,26 @@ Un chatbot inteligente desarrollado con FastAPI que ayuda a los estudiantes a pr
 ## Características
 
 - **100+ ejercicios** de operaciones con fracciones
-- **Clasificación automática de errores** usando Machine Learning
+- **Operaciones con números enteros** (suma, resta, multiplicación, división)
+- **Operaciones con fracciones** (suma, resta, multiplicación, división)
+- **Clasificación automática de errores** usando sistema inteligente
 - **Retroalimentación personalizada** para cada tipo de error
 - **API REST** con FastAPI
 - **Despliegue en Render** listo para producción
 
 ## Operaciones Soportadas
 
-- ➕ **Suma de fracciones**
-- ➖ **Resta de fracciones**
-- ✖️ **Multiplicación de fracciones**
-- ➗ **División de fracciones**
+### Números Enteros:
+- ➕ **Suma** (ej: 5 + 6 = 11)
+- ➖ **Resta** (ej: 10 - 3 = 7)
+- ✖️ **Multiplicación** (ej: 7 × 8 = 56)
+- ➗ **División** (ej: 15 ÷ 3 = 5)
+
+### Fracciones:
+- ➕ **Suma de fracciones** (ej: 1/2 + 1/4 = 3/4)
+- ➖ **Resta de fracciones** (ej: 3/4 - 1/2 = 1/4)
+- ✖️ **Multiplicación de fracciones** (ej: 2/3 × 3/4 = 1/2)
+- ➗ **División de fracciones** (ej: 1/2 ÷ 1/4 = 2)
 
 ## Tipos de Errores Detectados
 
@@ -93,12 +102,8 @@ El chatbot ahora usa un **sistema de clasificación simple** que no requiere sci
 
 ### 📋 Archivos de dependencias disponibles:
 - `requirements-render.txt` - **RECOMENDADO** (sin versiones específicas, solo wheels)
-- `requirements-venv.txt` - Para entorno virtual
-- `requirements-simple.txt` - Sin versiones específicas, solo wheels
 - `requirements.txt` - **ACTUALIZADO** (sin scikit-learn)
 - `requirements-python311.txt` - Versión optimizada para Python 3.11
-- `requirements-stable.txt` - Versiones estables (con scikit-learn)
-- `requirements-minimal.txt` - Versiones mínimas (con scikit-learn)
 
 ### 🔧 Configuración para Render:
 
@@ -126,9 +131,9 @@ services:
 - El archivo `runtime.txt` especifica Python 3.11.0
 - Render lo detectará automáticamente
 
-**Opción 4: Configuración con entorno virtual**
-- **Build Command:** `chmod +x setup.sh && ./setup.sh`
-- **Start Command:** `source venv/bin/activate && uvicorn main:app --host 0.0.0.0 --port $PORT`
+**Opción 4: Configuración alternativa**
+- **Build Command:** `pip install --upgrade pip && pip install -r requirements.txt`
+- **Start Command:** `uvicorn main:app --host 0.0.0.0 --port $PORT`
 
 **El despliegue debería funcionar ahora sin problemas de compilación.**
 
@@ -212,35 +217,52 @@ ChatBot-MatematicaBasica/
 
 ## Ejemplos de Uso
 
-### Ejemplo 1: Suma de fracciones
+### Ejemplo 1: Suma de números enteros
 ```python
 import requests
 
-# Obtener ejercicio
-ejercicio = requests.get("https://tu-app.onrender.com/ejercicio/").json()
-print(f"Pregunta: {ejercicio['pregunta']}")
-
-# Enviar respuesta
+# Enviar ejercicio de suma
 respuesta = requests.post("https://tu-app.onrender.com/clasificar/", json={
-    "pregunta": ejercicio["pregunta"],
-    "respuesta_estudiante": "5/6"
+    "pregunta": "¿Cuánto es 5 + 6?",
+    "respuesta_estudiante": "11"
 }).json()
 
 print(f"Tipo de error: {respuesta['tipo_error']}")
 print(f"Retroalimentación: {respuesta['retroalimentacion']}")
+print(f"Operación: {respuesta['operacion']}")
 ```
 
-### Ejemplo 2: Usando curl
-```bash
-# Obtener ejercicio
-curl -X GET "https://tu-app.onrender.com/ejercicio/"
+### Ejemplo 2: Multiplicación de fracciones
+```python
+import requests
 
-# Clasificar respuesta
+# Enviar ejercicio de multiplicación
+respuesta = requests.post("https://tu-app.onrender.com/clasificar/", json={
+    "pregunta": "¿Cuánto es 2/3 × 3/4?",
+    "respuesta_estudiante": "1/2"
+}).json()
+
+print(f"Tipo de error: {respuesta['tipo_error']}")
+print(f"Retroalimentación: {respuesta['retroalimentacion']}")
+print(f"Operación: {respuesta['operacion']}")
+```
+
+### Ejemplo 3: Usando curl
+```bash
+# Clasificar respuesta de suma
+curl -X POST "https://tu-app.onrender.com/clasificar/" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "pregunta": "¿Cuánto es 7 × 8?",
+    "respuesta_estudiante": "56"
+  }'
+
+# Clasificar respuesta de fracciones
 curl -X POST "https://tu-app.onrender.com/clasificar/" \
   -H "Content-Type: application/json" \
   -d '{
     "pregunta": "¿Cuánto es 1/2 + 1/3?",
-    "respuesta_estudiante": "2/5"
+    "respuesta_estudiante": "5/6"
   }'
 ```
 
