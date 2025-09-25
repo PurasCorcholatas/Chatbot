@@ -81,19 +81,31 @@ uvicorn main:app --reload
 
 ### ⚠️ Solución de Problemas de Compatibilidad
 
-Si encuentras errores de compilación con pandas, usa el archivo `requirements-stable.txt`:
+Si encuentras errores de compilación con pandas, tienes varias opciones:
 
-1. **Cambiar el Build Command en Render a:**
-   ```
-   pip install -r requirements-stable.txt
-   ```
+**Opción 1: Usar versiones estables (Recomendado)**
+```bash
+pip install -r requirements-stable.txt
+```
 
-2. **O actualizar el archivo `render.yaml`:**
-   ```yaml
-   buildCommand: pip install -r requirements-stable.txt
-   ```
+**Opción 2: Usar versiones mínimas (Si persisten problemas)**
+```bash
+pip install -r requirements-minimal.txt
+```
 
-Esto usa versiones más estables y ampliamente compatibles de las dependencias.
+**Opción 3: Actualizar render.yaml**
+```yaml
+buildCommand: pip install --upgrade pip && pip install -r requirements-stable.txt
+```
+
+**Opción 4: Forzar Python 3.11 en Render**
+- En la configuración del servicio, asegúrate de que `PYTHON_VERSION` esté configurado como `3.11.0`
+- Esto evita problemas de compatibilidad con Python 3.13
+
+### 📋 Archivos de dependencias disponibles:
+- `requirements.txt` - Versiones actualizadas (pandas 2.0.3)
+- `requirements-stable.txt` - Versiones estables (pandas 2.0.3)
+- `requirements-minimal.txt` - Versiones mínimas (pandas 1.5.3)
 
 ## Uso de la API
 
