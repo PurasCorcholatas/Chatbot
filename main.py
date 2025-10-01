@@ -27,12 +27,16 @@ def resolver_operacion(pregunta: Pregunta):
             a, b = map(str.strip, expresion.split("-"))
             resultado = Fraction(a) - Fraction(b)
 
+        elif "*" in expresion:
+            a, b = map(str.strip, expresion.split("*"))
+            resultado = Fraction(a) * Fraction(b)
+
         elif "/" in expresion:  # división o fracciones
             a, b = map(str.strip, expresion.split("/"))
             resultado = Fraction(a) / Fraction(b)
 
         else:
-            return {"error": "Operación no reconocida. Usa +, -, ÷ o fracciones."}
+            return {"error": "Operación no reconocida. Usa +, -, *, ÷ o fracciones."}
 
         return {
             "pregunta": enunciado,
